@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternAI - Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        :root {
+          --ims-sidebar: 200px;
+          --ims-accent: #1D9E75;
+          --ims-accent-light: #E1F5EE;
+          --ims-accent-dark: #0F6E56;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; }
+
+        .ims-shell {
+          display: flex;
+          height: 100vh;
+          border: 1px solid #ddd;
+          overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+          width: var(--ims-sidebar);
+          background: #fff;
+          border-right: 1px solid #ddd;
+          display: flex;
+          flex-direction: column;
+        }
+        .sidebar-logo {
+          padding: 20px 16px;
+          border-bottom: 1px solid #ddd;
+        }
+        .logo-mark { display: flex; align-items: center; gap: 10px; }
+        .logo-icon {
+          width: 32px; height: 32px; background: var(--ims-accent);
+          color: white; border-radius: 8px; display: flex;
+          align-items: center; justify-content: center; font-weight: bold;
+        }
+        .nav-item {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          color: #555;
+        }
+        .nav-item:hover, .nav-item.active {
+          background: #f0f0f0;
+          color: var(--ims-accent-dark);
+        }
+
+        /* Main Content */
+        .main {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .topbar {
+          padding: 16px 24px;
+          background: white;
+          border-bottom: 1px solid #ddd;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .content-area {
+          padding: 24px;
+          overflow-y: auto;
+          flex: 1;
+        }
+
+        /* Add your full previous styles here if you want */
+        /* (I shortened it for quick testing. You can paste your full style later) */
+    </style>
+</head>
+<body>
+
+<div class="ims-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <div class="logo-icon">AI</div>
+                <div><strong>InternAI</strong></div>
+            </div>
+        </div>
+        <div class="nav-item active">Dashboard</div>
+        <div class="nav-item">Interns</div>
+        <div class="nav-item">Tasks</div>
+        <div class="nav-item">AI Agent</div>
+        <div class="nav-item">Reports</div>
+    </aside>
+
+    <!-- Main Area -->
+    <main class="main">
+        <div class="topbar">
+            <h2>Dashboard</h2>
+            <p>Welcome back, HR Admin</p>
+        </div>
+
+        <div class="content-area">
+            <h1>Welcome to InternAI Dashboard</h1>
+            <p>Your beautiful dashboard is now running inside Flask!</p>
+            <p>We'll make it fully dynamic soon.</p>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
