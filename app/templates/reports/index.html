@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports — InternAI IMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
+        .navbar { display: flex; justify-content: space-between; margin-bottom: 24px; background: white; padding: 16px 20px; border-radius: 8px; }
+        h1 { color: #1D9E75; margin: 0; }
+        a { color: #1D9E75; text-decoration: none; }
+        .card { background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        button { padding: 8px 14px; background: #1D9E75; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        button:hover { background: #0F6E56; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>📄 Reports</h1>
+    <div><a href="{{ url_for('dashboard.index') }}">Dashboard</a></div>
+</div>
+
+<div class="card">
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Cohort Report</div>
+    <p style="margin-bottom: 16px;">Generate a comprehensive PDF report for all interns with statistics and insights.</p>
+    <a href="{{ url_for('reports.download_cohort_report') }}"><button>📥 Download Cohort Report</button></a>
+</div>
+
+<div class="card">
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Individual Reports</div>
+    {% if interns %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for intern in interns %}
+            <tr>
+                <td><strong>{{ intern.intern_id }}</strong></td>
+                <td>{{ intern.name }}</td>
+                <td>{{ intern.college_name or '—' }}</td>
+                <td><a href="{{ url_for('reports.download_intern_report', intern_id=intern.id) }}"><button>📥</button></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No interns to report on. <a href="{{ url_for('uploads.upload') }}">Upload data →</a></div>
+    {% endif %}
+</div>
+
+</body>
+</html>

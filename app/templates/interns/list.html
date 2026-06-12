@@ -4,37 +4,51 @@
     <meta charset="UTF-8">
     <title>Interns — InternAI IMS</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        h1 { margin: 0; color: #1D9E75; }
-        a { color: #1D9E75; text-decoration: none; padding: 8px 14px; 
-            border: 1px solid #1D9E75; border-radius: 6px; }
-        a:hover { background: #E1F5EE; }
-        table { width: 100%; background: white; border-collapse: collapse; 
-                border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 500; 
-             border-bottom: 1px solid #ddd; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; padding: 20px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; }
+        h1 { color: #1D9E75; margin: 0; }
+        .nav-links { display: flex; gap: 16px; }
+        a { color: #1D9E75; text-decoration: none; font-size: 14px; }
+        
+        .card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: #333; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         tr:hover { background: #fafafa; }
-        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
         .pursuing { background: #E1F5EE; color: #085041; }
         .relieved { background: #FDECEA; color: #7B1C1C; }
-        .badge { display: inline-block; background: #1D9E75; color: white; 
-                 padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .yes { background: #D4EDDA; color: #155724; }
+        .no { background: #F8D7DA; color: #721C24; }
+        
+        button { padding: 6px 12px; background: #1D9E75; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        button:hover { background: #0F6E56; }
+        
         .empty { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Interns</h1>
-    <a href="{{ url_for('uploads.upload') }}">+ Upload Excel</a>
+
+<div class="navbar">
+    <h1>👥 Interns</h1>
+    <div class="nav-links">
+        <a href="{{ url_for('uploads.upload') }}">+ Upload Excel</a>
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </div>
 </div>
 
 {% if interns %}
+<div class="card">
+    <div class="card-title">Intern Roster ({{ interns|length }} total)</div>
     <table>
         <thead>
             <tr>
-                <th>Intern ID</th>
+                <th>ID</th>
                 <th>Name</th>
                 <th>College</th>
                 <th>Status</th>
@@ -44,26 +58,25 @@
         </thead>
         <tbody>
             {% for intern in interns %}
-                <tr>
-                    <td><strong>{{ intern.intern_id }}</strong></td>
-                    <td>{{ intern.name }}</td>
-                    <td>{{ intern.college_name or '—' }}</td>
-                    <td><span class="status {{ intern.status.lower() }}">{{ intern.status }}</span></td>
-                    <td><span class="badge">{{ intern.fte_recommendation }}</span></td>
-                    <td><a href="{{ url_for('interns.profile', id=intern.id) }}">View</a></td>
-                </tr>
+            <tr>
+                <td><strong>{{ intern.intern_id }}</strong></td>
+                <td>{{ intern.name }}</td>
+                <td>{{ intern.college_name or '—' }}</td>
+                <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
+                <td><span class="badge {{ 'yes' if intern.fte_recommendation == 'YES' else 'no' }}">{{ intern.fte_recommendation }}</span></td>
+                <td><a href="{{ url_for('interns.profile', id=intern.id) }}"><button>View</button></a></td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 {% else %}
+<div class="card">
     <div class="empty">
         <p>No interns yet. <a href="{{ url_for('uploads.upload') }}">Upload data →</a></p>
     </div>
+</div>
 {% endif %}
 
-<p style="margin-top: 24px; color: #999; font-size: 13px;">
-    <a href="{{ url_for('auth.logout') }}">Logout</a> | 
-    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
-</p>
 </body>
 </html>

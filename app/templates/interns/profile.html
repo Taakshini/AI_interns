@@ -4,55 +4,77 @@
     <meta charset="UTF-8">
     <title>{{ intern.name }} — InternAI IMS</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .back { margin-bottom: 16px; }
+        body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
+        .navbar { display: flex; justify-content: space-between; margin-bottom: 24px; background: white; padding: 16px; border-radius: 8px; }
+        .content { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; }
+        h1 { color: #1D9E75; }
+        .buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 16px 0; }
+        button { padding: 10px 14px; background: #1D9E75; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #0F6E56; }
+        .output { background: #f8f8f8; padding: 16px; border-radius: 6px; margin-top: 12px; border-left: 4px solid #1D9E75; }
         a { color: #1D9E75; text-decoration: none; }
-        .card { background: white; padding: 30px; border-radius: 8px; 
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px; }
-        h1 { margin: 0 0 8px 0; color: #1D9E75; }
-        .subtitle { color: #999; font-size: 13px; margin-bottom: 24px; }
-        .field { margin-bottom: 16px; }
-        .label { font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
-        .value { font-size: 15px; color: #333; }
-        .badge { display: inline-block; background: #1D9E75; color: white; 
-                 padding: 2px 6px; border-radius: 3px; font-size: 12px; }
     </style>
 </head>
 <body>
-<div class="back"><a href="{{ url_for('interns.list_interns') }}">← Back to interns</a></div>
 
-<div class="card">
+<div class="navbar">
     <h1>{{ intern.name }}</h1>
-    <div class="subtitle">{{ intern.intern_id }} · {{ intern.college_name }}</div>
-
-    <div class="field">
-        <div class="label">Status</div>
-        <div class="value">{{ intern.status }} · FTE: <span class="badge">{{ intern.fte_recommendation }}</span></div>
-    </div>
-
-    <div class="field">
-        <div class="label">Dates</div>
-        <div class="value">{{ intern.date_of_joining or '—' }} to {{ intern.expected_completion_date or '—' }}</div>
-    </div>
-
-    <div class="field">
-        <div class="label">Business Unit</div>
-        <div class="value">{{ intern.business_unit or '—' }}</div>
-    </div>
-
-    <div class="field">
-        <div class="label">Type</div>
-        <div class="value">{{ intern.intern_type }} · {{ intern.paid_unpaid }}</div>
-    </div>
-
-    <div class="field">
-        <div class="label">Evaluation Feedback</div>
-        <div class="value" style="line-height: 1.6;">{{ intern.evaluation_feedback or '(None recorded)' }}</div>
-    </div>
-
-    <div style="margin-top: 24px; border-top: 1px solid #eee; padding-top: 16px; font-size: 13px; color: #999;">
-        Created: {{ intern.created_at.strftime('%Y-%m-%d %H:%M') }}
+    <div>
+        <a href="{{ url_for('interns.list_interns') }}">Back</a>
     </div>
 </div>
+
+<div class="content">
+    <div class="card">
+        <h2>{{ intern.intern_id }}</h2>
+        <p><strong>College:</strong> {{ intern.college_name or '—' }}</p>
+        <p><strong>Status:</strong> {{ intern.status }}</p>
+        <p><strong>FTE:</strong> {{ intern.fte_recommendation }}</p>
+        <p><strong>Type:</strong> {{ intern.intern_type }}</p>
+        <p><strong>Duration:</strong> {{ intern.duration or '—' }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Feedback</h2>
+        <p>{{ intern.evaluation_feedback or '(No feedback)' }}</p>
+    </div>
+
+    <div class="card">
+        <h2>AI Analysis</h2>
+        <div class="buttons">
+            <button onclick="analyze()">Analyze</button>
+            <button onclick="predict()">Predict</button>
+            <button onclick="recommend()">Recommend</button>
+            <a href="{{ url_for('reports.download_intern_report', intern_id=intern.id) }}"><button>Download PDF</button></a>
+        </div>
+        <div id="output"></div>
+    </div>
+</div>
+
+<script>
+function analyze() {
+    document.getElementById('output').innerHTML = '<p>Loading...</p>';
+    fetch("{{ url_for('ai.api_analyze', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(d => { document.getElementById('output').innerHTML = '<div class="output">' + d.analysis + '</div>'; })
+        .catch(e => { document.getElementById('output').innerHTML = '<div class="output">Error</div>'; });
+}
+function predict() {
+    document.getElementById('output').innerHTML = '<p>Loading...</p>';
+    fetch("{{ url_for('ai.api_predict', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(d => { document.getElementById('output').innerHTML = '<div class="output">Probability: <b>' + d.prediction.probability + '%</b><br/>' + d.prediction.reasoning + '</div>'; })
+        .catch(e => { document.getElementById('output').innerHTML = '<div class="output">Error</div>'; });
+}
+function recommend() {
+    document.getElementById('output').innerHTML = '<p>Loading...</p>';
+    fetch("{{ url_for('ai.api_recommend', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(d => { document.getElementById('output').innerHTML = '<div class="output">' + d.recommendations + '</div>'; })
+        .catch(e => { document.getElementById('output').innerHTML = '<div class="output">Error</div>'; });
+}
+</script>
+
 </body>
 </html>

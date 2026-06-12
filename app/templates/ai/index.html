@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Agent — InternAI IMS</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .navbar { display: flex; justify-content: space-between; margin-bottom: 24px; 
+                  background: white; padding: 16px 20px; border-radius: 8px; }
+        h1 { margin: 0; color: #1D9E75; }
+        .card { background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .card-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; }
+        .button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+        button { padding: 12px 16px; background: #1D9E75; color: white; border: none; 
+                 border-radius: 6px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #0F6E56; }
+        .output { background: #f8f8f8; padding: 16px; border-radius: 6px; margin-top: 16px;
+                  border-left: 4px solid #1D9E75; }
+        .loading { color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>🤖 AI Agent</h1>
+    <div>
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a> |
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Cohort Analysis</div>
+    <button onclick="analyzeCohort()">Generate Cohort Summary</button>
+    <div id="cohort-output" class="output" style="display:none;"></div>
+</div>
+
+<div class="card">
+    <div class="card-title">Individual Intern Analysis</div>
+    <p>Go to <a href="{{ url_for('interns.list_interns') }}">Interns</a> page, click "View", then use AI buttons.</p>
+</div>
+
+<script>
+function analyzeCohort() {
+    fetch("{{ url_for('ai.api_cohort_summary') }}")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('cohort-output').style.display = 'block';
+            document.getElementById('cohort-output').innerHTML = 
+                `<strong>Total Interns:</strong> ${data.total_interns}<br/><br/>${data.summary}`;
+        })
+        .catch(e => alert("Error: " + e));
+}
+</script>
+
+</body>
+</html>
