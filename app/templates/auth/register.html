@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register — InternAI IMS</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center;
+               align-items: center; height: 100vh; background: #f5f5f5; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 10px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.1); width: 360px; }
+        h2 { margin-bottom: 24px; color: #1D9E75; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 14px;
+                border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #1D9E75;
+                 color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
+        button:hover { background: #0F6E56; }
+        a { display: block; text-align: center; margin-top: 14px;
+            color: #1D9E75; font-size: 13px; }
+        .flash { padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; }
+        .warning { background: #FFF8E1; color: #7B5800; }
+        .success { background: #E1F5EE; color: #085041; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Create Account</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+        <input type="text"     name="username" placeholder="Username" required>
+        <input type="email"    name="email"    placeholder="Email"    required>
+        <input type="password" name="password" placeholder="Password" required>
+        <select name="role">
+            <option value="intern">Intern</option>
+            <option value="mentor">Mentor</option>
+            <option value="hr">HR</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Register</button>
+    </form>
+    <a href="{{ url_for('auth.login') }}">Already have an account? Log in</a>
+</div>
+</body>
+</html>

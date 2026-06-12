@@ -2,115 +2,247 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternAI - Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <title>Dashboard — InternAI IMS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
     <style>
-        :root {
-          --ims-sidebar: 200px;
-          --ims-accent: #1D9E75;
-          --ims-accent-light: #E1F5EE;
-          --ims-accent-dark: #0F6E56;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; }
-
-        .ims-shell {
-          display: flex;
-          height: 100vh;
-          border: 1px solid #ddd;
-          overflow: hidden;
-        }
-
-        /* Sidebar */
-        .sidebar {
-          width: var(--ims-sidebar);
-          background: #fff;
-          border-right: 1px solid #ddd;
-          display: flex;
-          flex-direction: column;
-        }
-        .sidebar-logo {
-          padding: 20px 16px;
-          border-bottom: 1px solid #ddd;
-        }
-        .logo-mark { display: flex; align-items: center; gap: 10px; }
-        .logo-icon {
-          width: 32px; height: 32px; background: var(--ims-accent);
-          color: white; border-radius: 8px; display: flex;
-          align-items: center; justify-content: center; font-weight: bold;
-        }
-        .nav-item {
-          padding: 12px 16px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          cursor: pointer;
-          color: #555;
-        }
-        .nav-item:hover, .nav-item.active {
-          background: #f0f0f0;
-          color: var(--ims-accent-dark);
-        }
-
-        /* Main Content */
-        .main {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-        }
-        .topbar {
-          padding: 16px 24px;
-          background: white;
-          border-bottom: 1px solid #ddd;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .content-area {
-          padding: 24px;
-          overflow-y: auto;
-          flex: 1;
-        }
-
-        /* Add your full previous styles here if you want */
-        /* (I shortened it for quick testing. You can paste your full style later) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+               background: #f5f5f5; padding: 20px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center;
+                  margin-bottom: 24px; background: white; padding: 16px 20px;
+                  border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .navbar h1 { margin: 0; color: #1D9E75; font-size: 24px; }
+        .navbar a { color: #1D9E75; text-decoration: none; margin-left: 16px; }
+        
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                   gap: 16px; margin-bottom: 24px; }
+        .metric { background: white; padding: 20px; border-radius: 8px;
+                  box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .metric-label { font-size: 12px; color: #999; text-transform: uppercase;
+                        margin-bottom: 8px; }
+        .metric-value { font-size: 28px; font-weight: 600; color: #1D9E75; }
+        .metric-sub { font-size: 12px; color: #999; margin-top: 4px; }
+        
+        .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                  gap: 16px; margin-bottom: 24px; }
+        .card { background: white; padding: 20px; border-radius: 8px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .card-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 16px; }
+        .chart-container { position: relative; height: 250px; }
+        
+        .table-card { background: white; padding: 20px; border-radius: 8px;
+                      box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 600;
+             border-bottom: 1px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #fafafa; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px;
+                 font-size: 11px; font-weight: 500; }
+        .pursuing { background: #E1F5EE; color: #085041; }
+        .relieved { background: #FDECEA; color: #7B1C1C; }
+        .yes { background: #D4EDDA; color: #155724; }
+        .no  { background: #F8D7DA; color: #721C24; }
+        
+        .empty { text-align: center; padding: 40px; color: #999; }
+        .footer { margin-top: 24px; font-size: 12px; color: #999; }
+        a { color: #1D9E75; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div class="ims-shell">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-mark">
-                <div class="logo-icon">AI</div>
-                <div><strong>InternAI</strong></div>
-            </div>
-        </div>
-        <div class="nav-item active">Dashboard</div>
-        <div class="nav-item">Interns</div>
-        <div class="nav-item">Tasks</div>
-        <div class="nav-item">AI Agent</div>
-        <div class="nav-item">Reports</div>
-    </aside>
-
-    <!-- Main Area -->
-    <main class="main">
-        <div class="topbar">
-            <h2>Dashboard</h2>
-            <p>Welcome back, HR Admin</p>
-        </div>
-
-        <div class="content-area">
-            <h1>Welcome to InternAI Dashboard</h1>
-            <p>Your beautiful dashboard is now running inside Flask!</p>
-            <p>We'll make it fully dynamic soon.</p>
-        </div>
-    </main>
+<div class="navbar">
+    <h1>📊 Dashboard</h1>
+    <div>
+        <a href="{{ url_for('interns.list_interns') }}">Interns</a>
+        <a href="{{ url_for('uploads.upload') }}">Upload</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </div>
 </div>
+
+<!-- Metrics Row -->
+<div class="metrics">
+    <div class="metric">
+        <div class="metric-label">Total Interns</div>
+        <div class="metric-value">{{ stats.total_interns }}</div>
+        <div class="metric-sub">{{ stats.pursuing_count }} pursuing</div>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Conversion Rate</div>
+        <div class="metric-value">{{ stats.conversion_rate }}%</div>
+        <div class="metric-sub">{{ stats.fte_yes }} with offer</div>
+    </div>
+    <div class="metric">
+        <div class="metric-label">At Risk</div>
+        <div class="metric-value">{{ stats.fte_no }}</div>
+        <div class="metric-sub">FTE recommendation: NO</div>
+    </div>
+    <div class="metric">
+        <div class="metric-label">Relieved</div>
+        <div class="metric-value">{{ stats.relieved_count }}</div>
+        <div class="metric-sub">Completed internship</div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="charts">
+    <div class="card">
+        <div class="card-title">Status Distribution</div>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-title">FTE Recommendations</div>
+        <div class="chart-container">
+            <canvas id="fteChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-title">Top Colleges</div>
+        <div class="chart-container">
+            <canvas id="collegeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Interns -->
+{% if recent %}
+<div class="table-card">
+    <div class="card-title">Recently Added</div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Status</th>
+                <th>FTE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for intern in recent %}
+            <tr>
+                <td><strong>{{ intern.intern_id }}</strong></td>
+                <td>{{ intern.name }}</td>
+                <td>{{ intern.college_name or '—' }}</td>
+                <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
+                <td><span class="badge {{ 'yes' if intern.fte_recommendation == 'YES' else 'no' }}">{{ intern.fte_recommendation }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- At Risk -->
+{% if at_risk %}
+<div class="table-card">
+    <div class="card-title">⚠️ At Risk (FTE: NO)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Status</th>
+                <th>Feedback</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for intern in at_risk %}
+            <tr>
+                <td><strong>{{ intern.intern_id }}</strong></td>
+                <td>{{ intern.name }}</td>
+                <td>{{ intern.college_name or '—' }}</td>
+                <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
+                <td style="font-size: 12px; color: #666;">{{ intern.evaluation_feedback[:50] or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="table-card">
+    <div class="empty">
+        <p>✅ No interns at risk — all have positive FTE recommendations!</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="footer">
+    <p>Last updated: <span id="update-time">just now</span></p>
+</div>
+
+<script>
+// Chart.js setup
+const chartColor = '#1D9E75';
+const chartBg = 'rgba(29, 158, 117, 0.1)';
+
+// Status Chart
+fetch("{{ url_for('dashboard.chart_status') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: ['#E1F5EE', '#FDECEA'],
+                    borderColor: ['#1D9E75', '#D32F2F'],
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    });
+
+// FTE Chart
+fetch("{{ url_for('dashboard.chart_fte') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('fteChart'), {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: ['#D4EDDA', '#F8D7DA'],
+                    borderColor: ['#28A745', '#DC3545'],
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    });
+
+// College Chart
+fetch("{{ url_for('dashboard.chart_college') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('collegeChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Count',
+                    data: data.data,
+                    backgroundColor: chartBg,
+                    borderColor: chartColor,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
