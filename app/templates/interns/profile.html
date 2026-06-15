@@ -43,12 +43,50 @@
     <div class="card">
         <h2>AI Analysis</h2>
         <div class="buttons">
-            <button onclick="analyze()">Analyze</button>
-            <button onclick="predict()">Predict</button>
-            <button onclick="recommend()">Recommend</button>
-            <a href="{{ url_for('reports.download_intern_report', intern_id=intern.id) }}"><button>Download PDF</button></a>
+            <!-- FTE & Conversion Score -->
+    <div class="card">
+        <div class="card-title">📊 Hiring Assessment</div>
+        <div class="header-section">
+            <div>
+                <div class="field">
+                    <div class="label">FTE Recommendation</div>
+                    <div class="value">
+                        <span class="badge {{ 'yes' if intern.fte_recommendation == 'YES' else 'no' }}">
+                            {{ intern.fte_recommendation }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="field">
+                    <div class="label">Conversion Probability</div>
+                    <div class="value" id="conversion-prob" style="color: #1D9E75; font-weight: 600; font-size: 20px;">
+                        Loading...
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="output"></div>
+        <div style="margin-top: 12px; padding: 12px; background: #f9f9f9; border-radius: 6px; font-size: 12px; color: #666; line-height: 1.6;">
+            <strong>📌 Data Source:</strong> This assessment is based on:<br/>
+            • FTE Recommendation (from uploaded Excel)<br/>
+            • Status & intern type (from uploaded Excel)<br/>
+            • Evaluation feedback (from uploaded Excel)<br/>
+            • Paid/Unpaid status (from uploaded Excel)<br/>
+        </div>
+    </div>
+
+    <!-- AI Analysis Card -->
+    <div class="card">
+        <h2>🤖 AI Analysis</h2>
+        <div class="buttons">
+            <button onclick="analyzeIntern()">Analyze Performance</button>
+            <button onclick="predictConversion()">Predict Conversion</button>
+            <button onclick="recommendTasks()">Task Recommendations</button>
+            <a href="{{ url_for('reports.download_intern_report', intern_id=intern.id) }}" style="display: flex; align-items: center; padding: 10px 16px; background: #1D9E75; color: white; border-radius: 6px; text-decoration: none;"><button style="width: 100%; cursor: pointer;">📥 Download PDF Report</button></a>
+        </div>
+        <div id="ai-output" style="display: none;"></div>
+    </div>
+
     </div>
 </div>
 
@@ -75,6 +113,74 @@ function recommend() {
         .catch(e => { document.getElementById('output').innerHTML = '<div class="output">Error</div>'; });
 }
 </script>
+<script>
+// Load conversion probability when page loads
+function loadConversionProbability() {
+    fetch("{{ url_for('ai.api_predict', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(data => {
+            const prob = data.prediction.probability;
+            document.getElementById('conversion-prob').textContent = prob + '%';
+            // Color code it
+            if (prob >= 85) {
+                document.getElementById('conversion-prob').style.color = '#27ae60';
+            } else if (prob >= 70) {
+                document.getElementById('conversion-prob').style.color = '#52c41a';
+            } else if (prob >= 50) {
+                document.getElementById('conversion-prob').style.color = '#faad14';
+            } else {
+                document.getElementById('conversion-prob').style.color = '#ff7875';
+            }
+        });
+}
 
+// Call on page load
+loadConversionProbability();
+
+function analyzeIntern() {
+    document.getElementById('ai-output').style.display = 'block';
+    document.getElementById('ai-output').innerHTML = '<div class="loading">Analyzing...</div>';
+    
+    fetch("{{ url_for('ai.api_analyze', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('ai-output').innerHTML = '<div class="output">' + data.analysis + '</div>';
+        })
+        .catch(e => {
+            document.getElementById('ai-output').innerHTML = '<div class="output">Error: ' + e + '</div>';
+        });
+}
+
+function predictConversion() {
+    document.getElementById('ai-output').style.display = 'block';
+    document.getElementById('ai-output').innerHTML = '<div class="loading">Predicting...</div>';
+    
+    fetch("{{ url_for('ai.api_predict', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(data => {
+            const pred = data.prediction;
+            document.getElementById('ai-output').innerHTML = 
+                '<div class="output"><b>Conversion Probability: ' + pred.probability + '%</b><br/>Reasoning: ' + pred.reasoning + '</div>';
+        })
+        .catch(e => {
+            document.getElementById('ai-output').innerHTML = '<div class="output">Error: ' + e + '</div>';
+        });
+}
+
+function recommendTasks() {
+    document.getElementById('ai-output').style.display = 'block';
+    document.getElementById('ai-output').innerHTML = '<div class="loading">Generating recommendations...</div>';
+    
+    fetch("{{ url_for('ai.api_recommend', intern_id=intern.id) }}")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('ai-output').innerHTML = 
+                '<div class="output"><b>Recommended Tasks:</b><br/>' + data.recommendations + '</div>';
+        })
+        .catch(e => {
+            document.getElementById('ai-output').innerHTML = '<div class="output">Error: ' + e + '</div>';
+        });
+}
+</script>
 </body>
 </html>

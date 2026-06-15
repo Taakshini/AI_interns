@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaderboard — InternAI IMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #f0f4ff; padding: 20px; }
+        .navbar { display: flex; justify-content: space-between; background: #1a3a8f; color: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; }
+        h1 { color: white; margin: 0; }
+        a { color: #F5A623; text-decoration: none; font-size: 14px; margin-left: 16px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a3a8f; color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f4ff; }
+        .rank { font-size: 20px; font-weight: 700; color: #1a3a8f; }
+        .rank-1 { color: #FFD700; }
+        .rank-2 { color: #C0C0C0; }
+        .rank-3 { color: #CD7F32; }
+        .score-bar { background: #e0e0e0; border-radius: 4px; height: 8px; margin-top: 4px; }
+        .score-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #1a3a8f, #F5A623); }
+        .on-track { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+        .at-risk { background: #fdecea; color: #721c24; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>🏆 Progress Leaderboard</h1>
+    <div>
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a href="{{ url_for('interns.list_interns') }}">Interns</a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="font-size: 12px; color: #666; margin-bottom: 20px; line-height: 1.8;">
+        <strong>📌 How scoring works (fair for all):</strong><br/>
+        Present = Full credit | Late = 70% credit | Absent = 0% credit<br/>
+        5+ consecutive absences = -5% per extra day penalty<br/>
+        All interns start at 100% and score adjusts based on attendance behavior.
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Progress Score</th>
+                <th>Attendance %</th>
+                <th>Consecutive Absences</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in scores %}
+            <tr>
+                <td class="rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
+                    {{ loop.index }}
+                </td>
+                <td><strong>{{ s.name }}</strong><br/><span style="font-size:11px;color:#999;">{{ s.intern_id }}</span></td>
+                <td>{{ s.college or '—' }}</td>
+                <td>
+                    <div style="font-weight:600;color:#1a3a8f;">{{ s.score }}%</div>
+                    <div class="score-bar"><div class="score-fill" style="width:{{ s.score }}%"></div></div>
+                </td>
+                <td>{{ s.attendance_rate }}%</td>
+                <td>
+                    {% if s.consecutive_absences >= 5 %}
+                        <span style="color: #dc3545; font-weight: 600;">{{ s.consecutive_absences }} days ⚠️</span>
+                    {% else %}
+                        {{ s.consecutive_absences }} days
+                    {% endif %}
+                </td>
+                <td>
+                    {% if '⚠️' in s.status %}
+                        <span class="at-risk">{{ s.status }}</span>
+                    {% else %}
+                        <span class="on-track">{{ s.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

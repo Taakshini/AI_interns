@@ -3,137 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard — InternAI IMS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; padding: 20px; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; }
-        h1 { color: #1D9E75; margin: 0; }
-        .nav-links { display: flex; gap: 16px; }
-        a { color: #1D9E75; text-decoration: none; font-size: 14px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4ff; }
         
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .metric { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .metric-label { font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 8px; }
-        .metric-value { font-size: 32px; font-weight: 600; color: #1D9E75; }
-        .metric-sub { font-size: 12px; color: #999; margin-top: 4px; }
+        /* Sidebar */
+        .shell { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #1a3a8f; padding: 24px 0; flex-shrink: 0; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h2 { color: #F5A623; font-size: 20px; }
+        .sidebar-logo p { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 2px; }
         
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 16px; }
-        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: #333; }
+        .nav-section { padding: 16px 12px 4px; }
+        .nav-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 8px 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.15s; margin-bottom: 2px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #F5A623; color: white; }
+        .nav-badge { margin-left: auto; background: rgba(255,255,255,0.2); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
         
+        .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { font-size: 12px; color: rgba(255,255,255,0.6); }
+        .user-name { font-size: 13px; font-weight: 500; color: white; }
+        
+        /* Main content */
+        .main { margin-left: 220px; flex: 1; }
+        .topbar { background: white; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8eaf0; }
+        .topbar-title { font-size: 18px; font-weight: 600; color: #1a3a8f; }
+        .topbar-sub { font-size: 12px; color: #999; margin-top: 2px; }
+        .topbar-actions { display: flex; gap: 10px; }
+        .btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: none; }
+        .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+        .btn-primary { background: #F5A623; color: white; }
+        .btn:hover { opacity: 0.85; }
+        
+        .content { padding: 24px 28px; }
+        
+        /* Metric cards */
+        .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .metric { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 4px solid transparent; }
+        .metric-blue { border-top-color: #1a3a8f; }
+        .metric-orange { border-top-color: #F5A623; }
+        .metric-yellow { border-top-color: #FFD700; }
+        .metric-dark { border-top-color: #0d2560; }
+        .metric-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .metric-value { font-size: 32px; font-weight: 700; color: #1a3a8f; }
+        .metric-sub { font-size: 12px; color: #F5A623; margin-top: 4px; font-weight: 500; }
+        
+        /* Charts */
+        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .charts-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .chart-title { font-size: 14px; font-weight: 600; color: #1a3a8f; }
+        .chart-tag { font-size: 10px; background: #e8f0fe; color: #1a3a8f; padding: 3px 8px; border-radius: 10px; }
+        .chart-container { position: relative; height: 200px; }
+        
+        /* Tables */
+        .table-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .table-title { font-size: 14px; font-weight: 600; color: #1a3a8f; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #ddd; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #fafafa; }
+        th { background: #f8f9ff; padding: 12px; text-align: left; font-weight: 600; color: #1a3a8f; border-bottom: 2px solid #e8eaf0; font-size: 11px; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8f9ff; }
         
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
-        .pursuing { background: #E1F5EE; color: #085041; }
-        .relieved { background: #FDECEA; color: #7B1C1C; }
-        .yes { background: #D4EDDA; color: #155724; }
-        .no { background: #F8D7DA; color: #721C24; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+        .pursuing { background: #e8f0fe; color: #1a3a8f; }
+        .relieved { background: #fdecea; color: #c62828; }
+        .yes { background: #e6f4ea; color: #1b5e20; }
+        .no { background: #fdecea; color: #c62828; }
         
-        .empty { text-align: center; padding: 40px; color: #999; }
+        a { color: #F5A623; text-decoration: none; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <h1>📊 Dashboard</h1>
-    <div class="nav-links">
-        <a href="{{ url_for('interns.list_interns') }}">Interns</a>
-        <a href="{{ url_for('uploads.upload') }}">Upload</a>
-        <a href="{{ url_for('ai.index') }}">AI Agent</a>
-        <a href="{{ url_for('reports.index') }}">Reports</a>
-        <a href="{{ url_for('auth.logout') }}">Logout</a>
-    </div>
+<div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>InternAI</h2>
+            <p>IMS Platform v1.0</p>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Main</div>
+            <a href="{{ url_for('dashboard.index') }}" class="nav-item active">
+                📊 Dashboard
+            </a>
+            <a href="{{ url_for('interns.list_interns') }}" class="nav-item">
+                👥 Interns
+                <span class="nav-badge">{{ stats.total_interns }}</span>
+            </a>
+            <a href="{{ url_for('interns.leaderboard') }}" class="nav-item">
+                🏆 Leaderboard
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Operations</div>
+            <a href="{{ url_for('uploads.upload') }}" class="nav-item">
+                📁 Upload Data
+            </a>
+            <a href="{{ url_for('reports.index') }}" class="nav-item">
+                📄 Reports
+            </a>
+            <a href="{{ url_for('ai.index') }}" class="nav-item">
+                🤖 AI Agent
+            </a>
+            <a href="{{ url_for('dashboard.cohort_analytics') }}" class="nav-item">
+                📈 Cohort Analytics
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Account</div>
+            <a href="{{ url_for('auth.logout') }}" class="nav-item">
+                🚪 Logout
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-name">HR Admin</div>
+            <div class="user-info">InternAI IMS</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Dashboard Overview</div>
+                <div class="topbar-sub">Q2 2026 · Real-time analytics</div>
+            </div>
+            <div class="topbar-actions">
+                <a href="{{ url_for('uploads.upload') }}"><button class="btn btn-outline">📁 Upload</button></a>
+                <a href="{{ url_for('reports.download_cohort_report') }}"><button class="btn btn-primary">📥 Export Report</button></a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Metric Cards -->
+            <div class="metrics">
+                <div class="metric metric-blue">
+                    <div class="metric-label">Total Interns</div>
+                    <div class="metric-value">{{ stats.total_interns }}</div>
+                    <div class="metric-sub">All registered</div>
+                </div>
+                <div class="metric metric-orange">
+                    <div class="metric-label">Active (Pursuing)</div>
+                    <div class="metric-value">{{ stats.pursuing_count }}</div>
+                    <div class="metric-sub">Currently enrolled</div>
+                </div>
+                <div class="metric metric-yellow">
+                    <div class="metric-label">FTE Recommended</div>
+                    <div class="metric-value">{{ stats.fte_yes }}</div>
+                    <div class="metric-sub">{{ stats.conversion_rate }}% conversion</div>
+                </div>
+                <div class="metric metric-dark">
+                    <div class="metric-label">At Risk</div>
+                    <div class="metric-value">{{ stats.fte_no }}</div>
+                    <div class="metric-sub">Need intervention</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">Status & FTE Distribution</span>
+                        <span class="chart-tag">Live</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">FTE Split</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="fteChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="charts-row-3">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">Top Colleges</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="collegeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">Intern Type Split</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">Paid vs Unpaid</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="paidChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Interns -->
+            {% if recent %}
+            <div class="table-card">
+                <div class="table-header">
+                    <span class="table-title">Recently Added Interns</span>
+                    <a href="{{ url_for('interns.list_interns') }}">View all →</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>College</th>
+                            <th>Status</th>
+                            <th>FTE</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for intern in recent %}
+                        <tr>
+                            <td><strong style="color:#1a3a8f;">{{ intern.intern_id }}</strong></td>
+                            <td>{{ intern.name }}</td>
+                            <td>{{ intern.college_name or '—' }}</td>
+                            <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
+                            <td><span class="badge {{ 'yes' if intern.fte_recommendation == 'YES' else 'no' }}">{{ intern.fte_recommendation }}</span></td>
+                            <td><a href="{{ url_for('interns.profile', id=intern.id) }}">View →</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- At Risk Interns -->
+            {% if at_risk %}
+            <div class="table-card">
+                <div class="table-header">
+                    <span class="table-title">⚠️ At Risk — Need Intervention</span>
+                    <a href="{{ url_for('dashboard.cohort_analytics') }}">View analytics →</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>College</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for intern in at_risk %}
+                        <tr>
+                            <td><strong style="color:#c62828;">{{ intern.intern_id }}</strong></td>
+                            <td>{{ intern.name }}</td>
+                            <td>{{ intern.college_name or '—' }}</td>
+                            <td><span class="badge relieved">{{ intern.status }}</span></td>
+                            <td><a href="{{ url_for('interns.profile', id=intern.id) }}">View →</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
 </div>
 
-<!-- Metrics -->
-<div class="metrics">
-    <div class="metric">
-        <div class="metric-label">Total Interns</div>
-        <div class="metric-value">{{ stats.total_interns }}</div>
-        <div class="metric-sub">All registered</div>
-    </div>
-    <div class="metric">
-        <div class="metric-label">Active (Pursuing)</div>
-        <div class="metric-value">{{ stats.pursuing_count }}</div>
-        <div class="metric-sub">Currently enrolled</div>
-    </div>
-    <div class="metric">
-        <div class="metric-label">Relieved</div>
-        <div class="metric-value">{{ stats.relieved_count }}</div>
-        <div class="metric-sub">Completed</div>
-    </div>
-    <div class="metric">
-        <div class="metric-label">FTE Recommended</div>
-        <div class="metric-value">{{ stats.fte_yes }}</div>
-        <div class="metric-sub">{{ stats.conversion_rate }}% conversion</div>
-    </div>
-</div>
+<script>
+// Color palette: blue, orange, yellow, dark blue
+const BLUE = '#1a3a8f';
+const ORANGE = '#F5A623';
+const YELLOW = '#FFD700';
+const DARK = '#0d2560';
+const LIGHT_BLUE = '#4a6dd4';
 
-<!-- Recent Interns -->
-{% if recent %}
-<div class="card">
-    <div class="card-title">Recently Added Interns</div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>College</th>
-                <th>Status</th>
-                <th>FTE</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for intern in recent %}
-            <tr>
-                <td><strong>{{ intern.intern_id }}</strong></td>
-                <td>{{ intern.name }}</td>
-                <td>{{ intern.college_name or '—' }}</td>
-                <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
-                <td><span class="badge {{ 'yes' if intern.fte_recommendation == 'YES' else 'no' }}">{{ intern.fte_recommendation }}</span></td>
-                <td><a href="{{ url_for('interns.profile', id=intern.id) }}">View</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endif %}
+// Status Chart
+fetch("{{ url_for('dashboard.chart_status') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('statusChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Interns',
+                    data: data.data,
+                    backgroundColor: [BLUE, ORANGE, YELLOW, DARK, LIGHT_BLUE],
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: '#f0f0f0' } },
+                    x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+    });
 
-<!-- At Risk -->
-{% if at_risk %}
-<div class="card">
-    <div class="card-title">⚠️ At Risk (FTE: NO)</div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>College</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for intern in at_risk %}
-            <tr>
-                <td><strong>{{ intern.intern_id }}</strong></td>
-                <td>{{ intern.name }}</td>
-                <td>{{ intern.college_name or '—' }}</td>
-                <td><span class="badge {{ intern.status.lower() }}">{{ intern.status }}</span></td>
-                <td><a href="{{ url_for('interns.profile', id=intern.id) }}">View</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="card">
-    <div class="empty">✅ No interns at risk — all have positive FTE recommendations!</div>
-</div>
-{% endif %}
+// FTE Chart
+fetch("{{ url_for('dashboard.chart_fte') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('fteChart'), {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: [BLUE, ORANGE],
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+            }
+        });
+    });
+
+// College Chart
+fetch("{{ url_for('dashboard.chart_college') }}")
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('collegeChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Interns',
+                    data: data.data,
+                    backgroundColor: BLUE,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                    y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+    });
+
+// Type Chart (Intern vs Student Intern)
+new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Intern', 'Student Intern'],
+        datasets: [{
+            data: [
+                {{ stats.total_interns - stats.pursuing_count }},
+                {{ stats.pursuing_count }}
+            ],
+            backgroundColor: [ORANGE, YELLOW],
+            borderWidth: 3,
+            borderColor: '#fff',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+    }
+});
+
+// Paid vs Unpaid Chart
+new Chart(document.getElementById('paidChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Unpaid'],
+        datasets: [{
+            data: [{{ stats.fte_yes }}, {{ stats.fte_no }}],
+            backgroundColor: [BLUE, LIGHT_BLUE],
+            borderWidth: 3,
+            borderColor: '#fff',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+    }
+});
+</script>
 
 </body>
 </html>

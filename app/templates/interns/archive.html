@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Archive History — InternAI IMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4ff; }
+        
+        .shell { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #1a3a8f; padding: 24px 0; flex-shrink: 0; }
+        .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h2 { color: #F5A623; font-size: 20px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; cursor: pointer; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        
+        .main { margin-left: 220px; flex: 1; }
+        .topbar { background: white; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8eaf0; }
+        .topbar-title { font-size: 18px; font-weight: 600; color: #1a3a8f; }
+        .content { padding: 24px 28px; }
+        
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .card-title { font-size: 16px; font-weight: 600; color: #1a3a8f; margin-bottom: 16px; }
+        
+        .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+        .stat { background: white; padding: 16px; border-radius: 12px; text-align: center; border-top: 4px solid #F5A623; }
+        .stat-num { font-size: 28px; font-weight: 700; color: #1a3a8f; }
+        .stat-label { font-size: 11px; color: #999; margin-top: 4px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9ff; padding: 12px; text-align: left; font-weight: 600; color: #1a3a8f; border-bottom: 2px solid #e8eaf0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        tr:hover td { background: #f8f9ff; }
+        
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+        .completed { background: #d4edda; color: #1b5e20; }
+        .terminated { background: #fdecea; color: #c62828; }
+        .other { background: #fff3cd; color: #856404; }
+        
+        .btn { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; }
+        .btn-restore { background: #4CAF50; color: white; }
+        .btn-restore:hover { background: #45a049; }
+        
+        .empty { text-align: center; padding: 40px; color: #999; }
+        
+        a { color: #F5A623; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>InternAI</h2>
+        </div>
+        <div class="nav-item">📊 <a href="{{ url_for('dashboard.index') }}">Dashboard</a></div>
+        <div class="nav-item">👥 <a href="{{ url_for('interns.list_interns') }}">Interns</a></div>
+        <div class="nav-item">📦 <a href="{{ url_for('interns.archive_history') }}">Archive</a></div>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">📦 Archive History</div>
+                <div style="font-size: 12px; color: #999; margin-top: 2px;">Historical records of archived interns</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Stats -->
+            <div class="stat-row">
+                <div class="stat">
+                    <div class="stat-num">{{ summary.total_archived }}</div>
+                    <div class="stat-label">Total Archived</div>
+                </div>
+                {% for reason, count in summary.by_reason.items() %}
+                <div class="stat">
+                    <div class="stat-num">{{ count }}</div>
+                    <div class="stat-label">{{ reason[:15] }}</div>
+                </div>
+                {% if loop.index == 3 %}{% break %}{% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Archive Table -->
+            <div class="card">
+                <div class="card-title">All Archived Interns</div>
+                {% if archived %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>College</th>
+                            <th>Status</th>
+                            <th>Archive Date</th>
+                            <th>Archive Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for intern in archived %}
+                        <tr>
+                            <td><strong style="color: #1a3a8f;">{{ intern.intern_id }}</strong></td>
+                            <td>{{ intern.name }}</td>
+                            <td>{{ intern.college_name or '—' }}</td>
+                            <td>{{ intern.status }}</td>
+                            <td>{{ intern.archived_at.strftime('%Y-%m-%d') if intern.archived_at else '—' }}</td>
+                            <td>
+                                {% if 'Completed' in (intern.archive_reason or '') %}
+                                    <span class="badge completed">{{ intern.archive_reason }}</span>
+                                {% elif 'Terminated' in (intern.archive_reason or '') %}
+                                    <span class="badge terminated">{{ intern.archive_reason }}</span>
+                                {% else %}
+                                    <span class="badge other">{{ intern.archive_reason or 'Unknown' }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('interns.restore', id=intern.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-restore">↩️ Restore</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">
+                    ✅ No archived interns yet. All interns are active.
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

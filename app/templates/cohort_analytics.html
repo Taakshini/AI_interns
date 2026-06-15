@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cohort Analytics — InternAI IMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; padding: 20px; }
+        
+        .navbar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; }
+        h1 { color: #1D9E75; margin: 0; }
+        a { color: #1D9E75; text-decoration: none; font-size: 14px; margin-left: 16px; }
+        
+        .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .insight-card { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #1D9E75; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .insight-text { font-size: 13px; line-height: 1.6; color: #555; }
+        
+        .section { background: white; padding: 24px; border-radius: 8px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 16px; font-weight: 600; color: #1D9E75; }
+        .help-icon { cursor: pointer; color: #999; font-size: 14px; text-decoration: underline; }
+        
+        .help-box { background: #f0f8f5; border: 1px solid #1D9E75; border-radius: 6px; padding: 12px; margin-top: 12px; font-size: 12px; color: #555; line-height: 1.6; }
+        .data-source { background: #fff9e6; border-left: 3px solid #faad14; padding: 10px; margin-top: 10px; font-size: 11px; color: #666; }
+        .data-source strong { color: #ff7a00; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f8f8; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #fafafa; }
+        
+        .score { font-weight: 600; padding: 4px 8px; border-radius: 4px; color: white; }
+        .score-90 { background: #27ae60; }
+        .score-80 { background: #52c41a; }
+        .score-70 { background: #faad14; }
+        .score-50 { background: #ff7875; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-box { background: #f0f8f5; padding: 16px; border-radius: 6px; text-align: center; }
+        .stat-number { font-size: 28px; font-weight: 600; color: #1D9E75; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+        
+        .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>📈 Cohort Analytics</h1>
+    <div>
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </div>
+</div>
+
+<!-- Data Source Summary -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">📊 Data Source Information</div>
+    </div>
+    <p style="font-size: 12px; color: #666; line-height: 1.6;">
+        All analysis below is <strong>automatically calculated</strong> from intern data uploaded via Excel/CSV in the <strong>Upload</strong> section.
+        <br/><br/>
+        <strong>How it works:</strong><br/>
+        1️⃣ HR uploads Excel file with intern details (name, college, status, feedback, FTE recommendation)<br/>
+        2️⃣ System validates and stores data in database<br/>
+        3️⃣ AI analysis runs automatically to generate insights, scores, and risk flags<br/>
+        4️⃣ Reports and analytics update in real-time<br/>
+        <br/>
+        <strong style="color: #1D9E75;">No additional input required — all data comes from your initial Excel upload.</strong>
+    </p>
+</div>
+
+<!-- Key Insights -->
+<div class="insights">
+    {% for insight in cohort_insights %}
+    <div class="insight-card">
+        <div class="insight-text">{{ insight }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- College Performance -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">🎓 Performance by College</div>
+        <span class="help-icon" onclick="alert('Shows which colleges have the highest FTE conversion rates. HR uses this to prioritize recruitment from top-performing institutions.')">❓ What is this?</span>
+    </div>
+    <div class="help-box">
+        <strong>What it shows:</strong> Conversion rate for each college (% of interns recommended for hire)<br/>
+        <strong>Why it matters:</strong> Identifies top-performing colleges for recruitment strategy<br/>
+        <strong>Data source:</strong> College Name + FTE Recommendation (from Excel upload)
+    </div>
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr>
+                <th>College</th>
+                <th>Total Interns</th>
+                <th>FTE: YES</th>
+                <th>FTE: NO</th>
+                <th>Conversion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for college, stats in colleges.items() %}
+            <tr>
+                <td><strong>{{ college }}</strong></td>
+                <td>{{ stats.total }}</td>
+                <td>{{ stats.yes }}</td>
+                <td>{{ stats.no }}</td>
+                <td><span style="color: #1D9E75; font-weight: 600;">{{ stats.conversion_rate }}%</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Department Performance -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">🏢 Performance by Department</div>
+        <span class="help-icon" onclick="alert('Shows which departments/business units hire the most interns. Helps HR understand departmental hiring trends.')">❓ What is this?</span>
+    </div>
+    <div class="help-box">
+        <strong>What it shows:</strong> Conversion rate by department (e.g., Engineering, Finance, Analytics)<br/>
+        <strong>Why it matters:</strong> Identifies which departments successfully convert interns to full-time hires<br/>
+        <strong>Data source:</strong> Business Unit + FTE Recommendation (from Excel upload)
+    </div>
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Total Interns</th>
+                <th>FTE: YES</th>
+                <th>FTE: NO</th>
+                <th>Conversion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dept, stats in departments.items() %}
+            <tr>
+                <td><strong>{{ dept }}</strong></td>
+                <td>{{ stats.total }}</td>
+                <td>{{ stats.yes }}</td>
+                <td>{{ stats.no }}</td>
+                <td><span style="color: #1D9E75; font-weight: 600;">{{ stats.conversion_rate }}%</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Hiring Recommendation Scores -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">⭐ Hiring Recommendation Scores (0-100)</div>
+        <span class="help-icon" onclick="alert('AI-generated hiring score for each intern. Helps HR prioritize hiring decisions.')">❓ What is this?</span>
+    </div>
+    <div class="help-box">
+        <strong>What it shows:</strong> Overall hiring suitability score (0-100) for each intern<br/>
+        <strong>How it's calculated:</strong><br/>
+        • FTE Recommendation (0-30 pts) | Status (0-20 pts) | Paid/Unpaid (0-15 pts)<br/>
+        • Feedback Sentiment (0-20 pts) | Intern Type (0-10 pts)<br/>
+        <strong>Data source:</strong> FTE Recommendation, Status, Paid/Unpaid, Evaluation Feedback (from Excel upload)
+    </div>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div> 85-100: Strongly Recommend</div>
+        <div class="legend-item"><div class="legend-color" style="background: #52c41a;"></div> 70-84: Recommend</div>
+        <div class="legend-item"><div class="legend-color" style="background: #faad14;"></div> 50-69: Consider</div>
+        <div class="legend-item"><div class="legend-color" style="background: #ff7875;"></div> 0-49: Do Not Recommend</div>
+    </div>
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Score</th>
+                <th>Recommendation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hire in hiring_scores[:15] %}
+            <tr>
+                <td><strong>{{ hire.intern_id }}</strong></td>
+                <td>{{ hire.name }}</td>
+                <td>{{ hire.college or '—' }}</td>
+                <td>
+                    <span class="score 
+                        {% if hire.score >= 85 %}score-90
+                        {% elif hire.score >= 70 %}score-80
+                        {% elif hire.score >= 50 %}score-70
+                        {% else %}score-50{% endif %}">
+                        {{ hire.score }}/100
+                    </span>
+                </td>
+                <td>{{ hire.recommendation }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- At-Risk Interns -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">⚠️ At-Risk Interns (Require Intervention)</div>
+        <span class="help-icon" onclick="alert('Interns flagged as likely NOT to convert. HR should provide mentoring/support.')">❓ What is this?</span>
+    </div>
+    <div class="help-box">
+        <strong>What it shows:</strong> Interns with risk of not converting to full-time (risk score 50-100)<br/>
+        <strong>How risk is calculated:</strong><br/>
+        • FTE Recommendation = NO (+50 pts)<br/>
+        • Status = Relieved (+30 pts)<br/>
+        • Negative feedback keywords: weak, poor, struggle (-20 pts)<br/>
+        <strong>Data source:</strong> FTE Recommendation, Status, Evaluation Feedback (from Excel upload)
+    </div>
+    {% if at_risk %}
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>College</th>
+                <th>Risk Score</th>
+                <th>Risk Factors</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for intern in at_risk %}
+            <tr>
+                <td><strong>{{ intern.intern_id }}</strong></td>
+                <td>{{ intern.name }}</td>
+                <td>{{ intern.college or '—' }}</td>
+                <td>
+                    <span class="score {% if intern.risk_score >= 80 %}score-90{% else %}score-80{% endif %}">
+                        {{ intern.risk_score }}%
+                    </span>
+                </td>
+                <td style="font-size: 12px;">
+                    {% for reason in intern.risk_reasons %}
+                        • {{ reason }}<br/>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 20px; text-align: center; color: #999;">
+        ✅ No at-risk interns detected! All interns are tracking well.
+    </div>
+    {% endif %}
+</div>
+
+<!-- Future Predictions -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">🔮 Future Cohort Forecast</div>
+        <span class="help-icon" onclick="alert('AI prediction for next cohort based on current patterns. Shows expected conversion rate and hiring volume.')">❓ What is this?</span>
+    </div>
+    <div class="help-box">
+        <strong>What it shows:</strong> Predicted conversion rate for the next cohort (future hiring outlook)<br/>
+        <strong>How it works:</strong> Current cohort conversion ({{ current_conversion_rate }}%) + 5% improvement factor = {{ next_cohort_prediction }}%<br/>
+        <strong>Data source:</strong> All FTE Recommendations in current cohort (from Excel upload)
+    </div>
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="stat-number">{{ next_cohort_prediction }}%</div>
+            <div class="stat-label">Predicted Conversion</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ (total_interns * next_cohort_prediction / 100) | int }}</div>
+            <div class="stat-label">Expected FTE Hires</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ (total_interns - (total_interns * next_cohort_prediction / 100)) | int }}</div>
+            <div class="stat-label">Expected At-Risk</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -26,6 +26,25 @@ class Intern(db.Model):
     fte_recommendation       = db.Column(db.String(5))
     created_at               = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Archive fields
+    is_archived = db.Column(db.Boolean, default=False)
+    archived_at = db.Column(db.DateTime)
+    archive_reason = db.Column(db.String(255))
+
+    def archive(self, reason=""):
+        """Archive this intern (soft delete)."""
+        self.is_archived = True
+        self.archived_at = datetime.utcnow()
+        self.archive_reason = reason or "Archived by system"
+        db.session.commit()
+
+    def restore(self):
+        """Restore archived intern."""
+        self.is_archived = False
+        self.archived_at = None
+        self.archive_reason = None
+        db.session.commit()
+
     def __repr__(self):
         return f"<Intern {self.intern_id} | {self.name} | {self.status}>"
 
@@ -50,4 +69,67 @@ class Intern(db.Model):
             "project_associated": self.project_associated,
             "evaluation_feedback": self.evaluation_feedback,
             "fte_recommendation": self.fte_recommendation,
+            "is_archived": self.is_archived,
+            "archive_reason": self.archive_reason,
         }
+    
+class Attendance(db.Model):
+    __tablename__ = "attendance"
+
+    id = db.Column(db.Integer, primary_key=True)
+    intern_id = db.Column(
+        db.Integer,
+        db.ForeignKey("interns.id"),
+        nullable=False
+    )
+
+    date = db.Column(db.Date, nullable=False)
+
+    status = db.Column(
+        db.String(10),
+        default="Present"
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    intern = db.relationship(
+        "Intern",
+        backref="attendance_records"
+    )
+
+
+class ProgressScore(db.Model):
+    __tablename__ = "progress_scores"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    intern_id = db.Column(
+        db.Integer,
+        db.ForeignKey("interns.id"),
+        nullable=False
+    )
+
+    score = db.Column(
+        db.Float,
+        default=100.0
+    )
+
+    consecutive_absences = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    last_updated = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    note = db.Column(db.String(255))
+
+    intern = db.relationship(
+        "Intern",
+        backref="progress"
+    )

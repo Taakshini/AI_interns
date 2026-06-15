@@ -2,8 +2,8 @@ from app.interns.models import Intern
 from sqlalchemy import func
 
 def get_dashboard_stats():
-    """Calculate all metrics for the dashboard."""
-    interns = Intern.query.all()
+    """Calculate all metrics for the dashboard (excluding archived interns)."""
+    interns = Intern.query.filter_by(is_archived=False).all()  # ← ADD THIS FILTER
     total = len(interns)
     
     if total == 0:
@@ -43,6 +43,14 @@ def get_dashboard_stats():
         "by_college": _get_college_distribution(interns),
     }
 
+def get_recent_interns(limit=5):
+    """Get most recently added interns (excluding archived)."""
+    return Intern.query.filter_by(is_archived=False).order_by(Intern.created_at.desc()).limit(limit).all()
+
+def get_at_risk_interns():
+    """Identify interns that might not convert (excluding archived)."""
+    return Intern.query.filter_by(is_archived=False, fte_recommendation="NO").all()
+    
 def _get_college_distribution(interns):
     """Group interns by college."""
     dist = {}
