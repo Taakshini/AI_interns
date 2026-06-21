@@ -3,22 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Login — InternAI IMS</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center;
-               align-items: center; height: 100vh; background: #f5f5f5; margin: 0; }
-        .card { background: white; padding: 40px; border-radius: 10px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.1); width: 360px; }
-        h2 { margin-bottom: 24px; color: #1D9E75; }
-        input { width: 100%; padding: 10px; margin-bottom: 14px;
-                border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #1D9E75;
-                 color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
-        button:hover { background: #0F6E56; }
-        .flash { padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; }
-        .success { background: #E1F5EE; color: #085041; }
-        .danger  { background: #FDECEA; color: #7B1C1C; }
-        .info    { background: #E8F4FD; color: #0D3C61; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/palette.css') }}">
+
 </head>
 <body>
 <div class="card">

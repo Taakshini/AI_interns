@@ -3,18 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ intern.name }} — InternAI IMS</title>
-    <style>
-        body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
-        .navbar { display: flex; justify-content: space-between; margin-bottom: 24px; background: white; padding: 16px; border-radius: 8px; }
-        .content { max-width: 900px; margin: 0 auto; }
-        .card { background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; }
-        h1 { color: #1D9E75; }
-        .buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 16px 0; }
-        button { padding: 10px 14px; background: #1D9E75; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        button:hover { background: #0F6E56; }
-        .output { background: #f8f8f8; padding: 16px; border-radius: 6px; margin-top: 12px; border-left: 4px solid #1D9E75; }
-        a { color: #1D9E75; text-decoration: none; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/palette.css') }}">
+
 </head>
 <body>
 

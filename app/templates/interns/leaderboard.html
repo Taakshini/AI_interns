@@ -3,26 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Leaderboard — InternAI IMS</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: sans-serif; background: #f0f4ff; padding: 20px; }
-        .navbar { display: flex; justify-content: space-between; background: #1a3a8f; color: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; }
-        h1 { color: white; margin: 0; }
-        a { color: #F5A623; text-decoration: none; font-size: 14px; margin-left: 16px; }
-        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #1a3a8f; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #f0f4ff; }
-        .rank { font-size: 20px; font-weight: 700; color: #1a3a8f; }
-        .rank-1 { color: #FFD700; }
-        .rank-2 { color: #C0C0C0; }
-        .rank-3 { color: #CD7F32; }
-        .score-bar { background: #e0e0e0; border-radius: 4px; height: 8px; margin-top: 4px; }
-        .score-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #1a3a8f, #F5A623); }
-        .on-track { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
-        .at-risk { background: #fdecea; color: #721c24; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/palette.css') }}">
+
 </head>
 <body>
 

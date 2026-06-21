@@ -104,3 +104,21 @@ def archive_history():
         archived=archived,
         summary=summary,
     )
+def save_interns(interns):
+    """Save interns to database, checking for duplicates."""
+    from app.extensions import db
+    from app.interns.models import Intern
+    
+    saved = 0
+    duplicates = 0
+    
+    for intern in interns:
+        existing = Intern.query.filter_by(intern_id=intern.intern_id).first()
+        if existing:
+            duplicates += 1
+        else:
+            db.session.add(intern)
+            saved += 1
+    
+    db.session.commit()
+    return saved
